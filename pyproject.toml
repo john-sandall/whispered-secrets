@@ -1,0 +1,177 @@
+###########
+# 📜 Poetry
+###########
+[tool.poetry]
+name = "whispered_secrets"
+version = "0.1.0"
+description = "An Open-Source Tool To Live Transcribe & Summarize Conversations."
+authors = ["John Sandall <contact@coefficient.ai>"]
+license = "UNLICENSED"
+classifiers = ["Private :: Do Not Upload"]
+packages = [
+  { include = "whispered_secrets", from = "whispered_secrets" },
+  # Add more packages here, e.g.
+  # { include = "module_name", from = "whispered_secrets" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.12.1"
+# Everything below here is alphabetically sorted
+ipykernel = "^6.29.4"
+jupyterlab = "^4.1.6"
+
+[tool.poetry.dev-dependencies]
+# Everything below here is alphabetically sorted
+detect-secrets = "1.2.0"
+ipdb = "^0.13.13"
+pip-audit = "^2.5.5"
+pre-commit = "^3.3.3"
+pytest = "^7.4.0"
+ruff = "^0.1.14"
+towncrier = "^22.12.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+############
+# ✅ Linters
+############
+[tool.ruff]
+line-length = 100
+indent-width = 4
+target-version = "py312"
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "AIR",
+  "ARG",
+  "B",
+  "C4",
+  "C90",
+  "COM",
+  # "CPY",
+  "D",
+  "DJ",
+  "DTZ",
+  "E",
+  # "E4", "E7", "E9",
+  "ERA",
+  "EXE",
+  "F",
+  "FA",
+  "FIX",
+  "FLY",
+  # "FURB",
+  "G",
+  "I",
+  "ICN",
+  "INP",
+  "INT",
+  "ISC",
+  # "LOG",
+  "N",
+  "NPY",
+  "PD",
+  "PERF",
+  "PGH",
+  "PIE",
+  "PL",
+  "PT",
+  "PTH",
+  "PYI",
+  "Q",
+  "RET",
+  "RSE",
+  "RUF",
+  "SIM",
+  "SLF",
+  "SLOT",
+  "T10",
+  "T20",
+  "TCH",
+  "TD",
+  "TID",
+  "TRY",
+  "UP",
+  "W",
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+##############
+# 📣 Towncrier
+##############
+[tool.towncrier]
+package = "whispered_secrets"
+package_dir = "."
+filename = "CHANGELOG.md"
+directory = ".changelog/"
+template = ".changelog/template.md"
+title_format = "## [{version}] - {project_date}"
+issue_format = "[#{issue}](https://github.com/john-sandall/whispered-secrets/issues/{issue})"
+start_string = "<!-- TOWNCRIER -->\n"
+underlines = ["", ""]
+
+# .added for new features
+# .changed for changes in existing functionality
+# .deprecated for soon-to-be removed features
+# .removed for now removed features
+# .fixed for any bug fixes
+# .security in case of vulnerabilities
+# .analysis for data analyses
+# .docs for documentation improvements
+# .maintenance for maintenance tasks & upgrades
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Bug Fixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "security"
+name = "Security"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "analysis"
+name = "Analyses"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "docs"
+name = "Improved Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "maintenance"
+name = "Maintenance Changes"
+showcontent = true
+
