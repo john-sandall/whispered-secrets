@@ -8,7 +8,7 @@ us to keep other docs easily aligned with future upstream changes to
 ## Install system-level dependencies with [homebrew](https://brew.sh/)
 
 ```sh
-# brew install wkhtmltopdf
+brew install ffmpeg portaudio
 ```
 
 ## Jupyter kernel
@@ -16,5 +16,3 @@ us to keep other docs easily aligned with future upstream changes to
 ```sh
 python -m ipykernel install --user --name whispered-secrets --display-name "Python (whispered-secrets)"
 ```
-
-

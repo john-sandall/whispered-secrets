@@ -19,6 +19,16 @@ python = "^3.12.1"
 # Everything below here is alphabetically sorted
 ipykernel = "^6.29.4"
 jupyterlab = "^4.1.6"
+numpy = "^1.26.4"
+openai-whisper = { git = "https://github.com/openai/whisper.git" }
+pandas = "^2.2.2"
+pyaudio = "^0.2.14"
+speechrecognition = "^3.10.3"
+torch = "^2.2.2"
+torchaudio = "^2.2.2"
+torchvision = "^0.17.2"
+typer = "^0.12.3"
+streamlit = "^1.33.0"
 
 [tool.poetry.dev-dependencies]
 # Everything below here is alphabetically sorted
@@ -98,6 +108,41 @@ select = [
   "UP",
   "W",
 ]
+ignore = [
+  # "ARG001",
+  # "ARG002",
+  # "COM812",
+  "C901",
+  # "D101",
+  "D202",
+  # "D205",
+  # "D211",
+  # "D213",
+  "D400",
+  "D401",
+  "D403",
+  # "D404",
+  # "D415",
+  # "DTZ005",
+  # "E203",
+  # "FIX002",
+  # "G004",
+  # "INP001",
+  # "ISC001",
+  # "PD901",
+  # "PLR2004",
+  # "PT004",
+  # "PTH107",
+  # "PTH123",
+  # "R504",
+  # "R506",
+  # "R508",
+  # "RUF013",
+  # "T100",
+  "T201",
+  # "TD002",
+  # "TD003",
+]
 fixable = ["ALL"]
 
 [tool.ruff.lint.pydocstyle]
@@ -174,4 +219,3 @@ showcontent = true
 directory = "maintenance"
 name = "Maintenance Changes"
 showcontent = true
-
