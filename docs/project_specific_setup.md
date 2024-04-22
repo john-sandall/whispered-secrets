@@ -9,6 +9,8 @@ us to keep other docs easily aligned with future upstream changes to
 
 ```sh
 brew install ffmpeg portaudio
+# Manually install ollama (https://ollama.com/)
+ollama pull llama3
 ```
 
 ## Jupyter kernel

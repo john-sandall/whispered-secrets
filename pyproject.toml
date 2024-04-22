@@ -29,6 +29,11 @@ torchaudio = "^2.2.2"
 torchvision = "^0.17.2"
 typer = "^0.12.3"
 streamlit = "^1.33.0"
+watchdog = "^4.0.0"
+langchain-community = "^0.0.34"
+soundfile = "^0.12.1"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.3"
 
 [tool.poetry.dev-dependencies]
 # Everything below here is alphabetically sorted
@@ -80,7 +85,7 @@ select = [
   "ICN",
   "INP",
   "INT",
-  "ISC",
+  # "ISC",
   # "LOG",
   "N",
   "NPY",
@@ -112,8 +117,10 @@ ignore = [
   # "ARG001",
   # "ARG002",
   # "COM812",
+  "C416",
   "C901",
-  # "D101",
+  "D101",
+  "D103",
   "D202",
   # "D205",
   # "D211",
@@ -129,21 +136,35 @@ ignore = [
   # "G004",
   # "INP001",
   # "ISC001",
-  # "PD901",
+  "PD901",
+  "PLR0912",
+  "PLR0915",
   # "PLR2004",
   # "PT004",
-  # "PTH107",
+  "PTH107",
+  "PTH110",
   # "PTH123",
   # "R504",
   # "R506",
   # "R508",
   # "RUF013",
+  "SIM102",
   # "T100",
   "T201",
   # "TD002",
   # "TD003",
+  "COM812",
 ]
 fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"streamlit_tutorial.py" = ["ERA001"]
+"app_2.py" = ["ERA001"]
+"app_3.py" = ["E501"]
+"app_4.py" = ["F841", "ERA001"]
+"summarize.py" = ["B904", "E501", "ISC003", "RSE102", "TRY200"]
+"1 - Transcription.ipynb" = ["E501"]
+"2 - Ollama.ipynb" = ["F811"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
