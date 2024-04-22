@@ -85,7 +85,7 @@ select = [
   "ICN",
   "INP",
   "INT",
-  "ISC",
+  # "ISC",
   # "LOG",
   "N",
   "NPY",
@@ -153,13 +153,18 @@ ignore = [
   "T201",
   # "TD002",
   # "TD003",
+  "COM812",
 ]
 fixable = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "streamlit_tutorial.py" = ["ERA001"]
 "app_2.py" = ["ERA001"]
-"summarize.py" = ["B904", "COM812", "E501", "ISC003", "RSE102", "TRY200"]
+"app_3.py" = ["E501"]
+"app_4.py" = ["F841", "ERA001"]
+"summarize.py" = ["B904", "E501", "ISC003", "RSE102", "TRY200"]
+"1 - Transcription.ipynb" = ["E501"]
+"2 - Ollama.ipynb" = ["F811"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
