@@ -2,7 +2,7 @@
 Whispered Secrets.
 
 Usage:
-    streamlit run demo/app.py
+    streamlit run demo/app_4.py
 """
 
 import subprocess
@@ -11,20 +11,6 @@ from pathlib import Path
 
 import speech_recognition as sr
 import streamlit as st
-
-hide_stale_elements = """
-<style>
-div[data-stale="true"] {
-    display: none !important;
-}
-</style>
-"""
-
-
-def send_stop_signal():
-    with Path.open("stop_signal.txt", "w") as f:
-        print("Sending stop signal")
-        f.write("stop")
 
 
 def start_transcription(model, energy_threshold, record_timeout, phrase_timeout, mic_index):
@@ -44,15 +30,6 @@ def start_transcription(model, energy_threshold, record_timeout, phrase_timeout,
         str(mic_index),
     ]
     subprocess.Popen(cmd)
-
-
-def clear_transcription_file():
-    """Clear the contents of the transcription file"""
-    # Opening in 'w' mode truncates the file
-    with Path.open("transcription_output.txt", "w") as file:
-        pass
-    with Path.open("summary.txt", "w") as file:  # noqa: F841
-        pass
 
 
 def load_transcription():
@@ -76,9 +53,6 @@ def summarize():
 
 
 def app():
-    # Inject the custom CSS at the start of the app
-    st.markdown(hide_stale_elements, unsafe_allow_html=True)
-
     st.title("Real-Time Transcription")
     last_update = st.empty()
 
@@ -115,7 +89,6 @@ def app():
     if not st.session_state.transcribing:
         if st.button("Start Transcribing"):
             st.session_state.transcribing = True
-            clear_transcription_file()
             start_transcription(
                 model,
                 energy_threshold,
@@ -128,35 +101,78 @@ def app():
     if st.session_state.transcribing:
         if st.button("Stop Transcribing"):
             st.session_state.transcribing = False
-            send_stop_signal()
             st.error("Transcription stopped!")
             time.sleep(2)
             st.rerun()
         st.success("Transcription starting...")
 
     if "initialized" not in st.session_state:
-        clear_transcription_file()
         st.session_state["initialized"] = True
 
     st.markdown("### Transcription")
     transcription_display = st.empty()
 
-    st.markdown("---")
+    some_markdown = """
+## 🛠️ FIXES
+We have two problems remaining:
 
-    st.markdown("### Summary")
-    summary_display = st.empty()
+- 1️⃣   Streamlit is loading the last used transcription file.
+- 2️⃣   Streamlit is not stopping the transcriber CLI tool when we click "Stop".
 
-    counter = 0
+```python
+################################################################
+# 1. Add a function to wipe the transcription file on either:
+#    - Streamlit initialization, or
+#    - When we start a new transcription.
+
+def clear_transcription_file():
+    '''Clear the contents of the transcription file'''
+    # Opening in 'w' mode truncates the file
+    with Path.open("transcription_output.txt", "w") as file:
+        pass
+    with Path.open("summary.txt", "w") as file:  # noqa: F841
+        pass
+
+################################################################
+# 2. Create a "stop signal" using a file that our CLI tool can see.
+#    If the file exists, it should stop.
+
+def send_stop_signal():
+    with Path.open("stop_signal.txt", "w") as f:
+        print("Sending stop signal")
+        f.write("stop")
+
+
+################################################################
+# 3. Hook it all up e.g. our "Stop transcribing" button now does this.
+if st.button("Stop Transcribing"):
+    st.session_state.transcribing = False
+    send_stop_signal()
+    st.error("Transcription stopped!")
+    time.sleep(2)
+    st.rerun()
+```
+
+We need to make one more change to our `transcribe.py` too:
+
+```python
+# Add this at the stop of the audio transcription loop.
+while True:
+    if check_for_stop_signal():
+        print("Stop signal received. Exiting...")
+        break
+```
+"""
+
+    # UNCOMMENT THIS WHEN READY
+    st.markdown("How can we fix this?")
+    # st.markdown(some_markdown)
+
     while True:
         transcription_content = load_transcription()
         transcription_display.markdown(transcription_content)
         last_update.text(f"Last updated: {time.ctime()}")
 
-        if counter % 10 == 0:
-            summary = summarize()
-            summary_display.markdown(summary)
-
-        counter += 1
         time.sleep(1)  # Refresh every second
 
 

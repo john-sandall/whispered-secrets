@@ -2,7 +2,7 @@
 Whispered Secrets.
 
 Usage:
-    streamlit run demo/app.py
+    streamlit run demo/app_5.py
 """
 
 import subprocess
@@ -57,20 +57,6 @@ def clear_transcription_file():
 
 def load_transcription():
     with Path.open("transcription_output.txt", "a+") as file:
-        file.seek(0)  # Move cursor to the start of the file
-        return file.read()
-
-
-def summarize():
-    cmd = [
-        "python",
-        "-m",
-        "demo.summarize",
-        "transcription_output.txt",
-        "summary.txt",
-    ]
-    subprocess.Popen(cmd)
-    with Path.open("summary.txt", "a+") as file:
         file.seek(0)  # Move cursor to the start of the file
         return file.read()
 
@@ -141,22 +127,11 @@ def app():
     st.markdown("### Transcription")
     transcription_display = st.empty()
 
-    st.markdown("---")
-
-    st.markdown("### Summary")
-    summary_display = st.empty()
-
-    counter = 0
     while True:
         transcription_content = load_transcription()
         transcription_display.markdown(transcription_content)
         last_update.text(f"Last updated: {time.ctime()}")
 
-        if counter % 10 == 0:
-            summary = summarize()
-            summary_display.markdown(summary)
-
-        counter += 1
         time.sleep(1)  # Refresh every second
 
 

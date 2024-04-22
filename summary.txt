@@ -1,0 +1,10 @@
+
+# AI Engineer's Perspective on Russian-Ukraine War and Engineering Culture
+
+_**tldr:** A systems engineer's thoughts on AI, war, and engineering priorities._
+
+- The Russian-Ukraine war has AI engineers thinking about nuclear weapon escalation
+- Highly skilled AI engineers translate ideas into software or hardware
+- Engineering culture prioritizes the customer, company, and technological challenge
+
+In the midst of conflict, AI engineers must navigate complex priorities. They think critically about the impact of their work on users and organizations, while also striving for efficiency and innovation.
