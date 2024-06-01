@@ -4,14 +4,27 @@
 
 An Open-Source Tool To Live Transcribe & Summarize Conversations.
 
-## Project cheatsheet
+## Run
+
+```sh
+# Transcribe + Summarise
+python -m demo.transcribe
+
+# Transcribe + Summarise
+streamlit run demo/app.py
+
+# Run the ollama server (in a separate window)
+ollama serve
+```
+
+## Development cheatsheet
 
   - **pre-commit:** `pre-commit run --all-files`
   - **pytest:** `pytest` or `pytest -s`
   - **coverage:** `coverage run -m pytest` or `coverage html`
   - **poetry sync:** `poetry install --no-root --sync`
   - **updating requirements:** see [docs/updating_requirements.md](docs/updating_requirements.md)
-- **create towncrier entry:** `towncrier create 123.added --edit`
+  - **create towncrier entry:** `towncrier create 123.added --edit`
 
 
 ## Initial project setup
