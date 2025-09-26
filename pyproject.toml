@@ -27,13 +27,14 @@ speechrecognition = "^3.10.3"
 torch = "^2.2.2"
 torchaudio = "^2.2.2"
 torchvision = "^0.17.2"
-typer = "^0.12.3"
+typer = "^0.17.0"
 streamlit = "^1.33.0"
 watchdog = "^4.0.0"
 langchain-community = "^0.0.34"
 soundfile = "^0.12.1"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.3"
+joblib = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 # Everything below here is alphabetically sorted

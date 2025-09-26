@@ -2,11 +2,14 @@
 **/.ipynb_checkpoints/*
 **/__pycache__/*
 *.pyc
+.cache/
 
 # Data
 ./data/
 !**/data/**/README.md
 !**/data/**/*.gitkeep
+summary.txt
+transcription_output.txt
 
 # Secrets
 .env

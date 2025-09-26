@@ -64,14 +64,14 @@ def app():
                     mic_index,
                 ),
             )
-            # st.rerun()
+            st.rerun()
 
     if st.session_state.transcribing:
         if st.button("Stop Transcribing"):
             st.session_state.transcribing = False
             st.error("Transcription stopped!")
-            # time.sleep(2)
-            # st.rerun()
+            time.sleep(2)
+            st.rerun()
         st.success("Transcription starting...")
 
 

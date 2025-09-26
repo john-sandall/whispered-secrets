@@ -25,8 +25,7 @@ def check_for_stop_signal():
 def main(
     model: str = typer.Option(
         "medium",
-        help="Model to use",
-        prompt="Choose a model from ['tiny', 'base', 'small', 'medium']",
+        help="Model to use. Choose from: tiny, base, small, medium",
     ),
     energy_threshold: int = typer.Option(300, help="Energy level for mic to detect."),
     record_timeout: float = typer.Option(3.0, help="How real time the recording is in seconds."),

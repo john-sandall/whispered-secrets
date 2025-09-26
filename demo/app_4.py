@@ -166,7 +166,7 @@ while True:
 
     # UNCOMMENT THIS WHEN READY
     st.markdown("How can we fix this?")
-    # st.markdown(some_markdown)
+    st.markdown(some_markdown)
 
     while True:
         transcription_content = load_transcription()

@@ -30,6 +30,9 @@ def main(input_filepath: str, output_filepath: str):
     # Generate a summary using Ollama
     summary_text = llm.invoke(
         """
+        You are a sardonic AI who loves emoji!
+
+
         Summarize the following transcription giving a JSON output containing
             - "title": Catchy title to summarise the entire transcript
             - "tldr": tldr-style "tagline"
@@ -42,6 +45,7 @@ def main(input_filepath: str, output_filepath: str):
         {content}
 
         Your JSON MUST be valid! You must ONLY provide the raw JSON. JSON file:
+
         """
     )
     summary_text = summary_text[summary_text.find("{") : summary_text.find("}") + 1]
