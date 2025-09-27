@@ -83,7 +83,21 @@ def app():
     last_update = st.empty()
 
     # Sidebar
-    model = st.sidebar.selectbox("Choose a model", ["tiny", "base", "small", "medium"])
+    model_options = [
+        ("tiny", "English (tiny)"),
+        ("base", "English (base)"),
+        ("small", "English (small)"),
+        ("medium", "English (medium)"),
+        ("small.ja", "Japanese (small)"),
+        ("medium.ja", "Japanese (medium)"),
+        ("small.multi", "Multilingual (small)"),
+        ("medium.multi", "Multilingual (medium)"),
+    ]
+    model = st.sidebar.selectbox(
+        "Choose a model",
+        options=model_options,
+        format_func=lambda x: x[1],
+    )[0]
     mic_index = st.sidebar.selectbox(
         "Select the microphone",
         options=[(i, name) for i, name in enumerate(sr.Microphone.list_microphone_names())],

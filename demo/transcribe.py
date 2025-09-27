@@ -25,7 +25,7 @@ def check_for_stop_signal():
 def main(
     model: str = typer.Option(
         "medium",
-        help="Model to use. Choose from: tiny, base, small, medium",
+        help="Model to use. Choose from: tiny, base, small, medium, or with language suffix like small.en or small.ja",
     ),
     energy_threshold: int = typer.Option(300, help="Energy level for mic to detect."),
     record_timeout: float = typer.Option(3.0, help="How real time the recording is in seconds."),
@@ -49,7 +49,22 @@ def main(
     source = sr.Microphone(sample_rate=16000, device_index=mic_index)
 
     # Load / Download model
-    model = model + ".en"
+    # Store original model name for language detection and display
+    original_model = model
+
+    # Check if model already has a language suffix (.en, .ja, .multi, etc.) or is a multilingual model
+    if "." not in model:
+        # If no suffix, default to English-only model for backward compatibility
+        # unless it's "large" which doesn't have .en variant
+        if model != "large":
+            model = model + ".en"
+    elif ".multi" in model:
+        # For multilingual models, remove the .multi suffix as Whisper uses base names for multilingual
+        model = model.replace(".multi", "")
+    elif ".ja" in model:
+        # For Japanese, we use the multilingual model but will force Japanese language
+        model = model.replace(".ja", "")
+
     audio_model = whisper.load_model(model)
 
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect
@@ -88,11 +103,11 @@ def main(
     )
 
     message = (
-        f"✅ Model {model} loaded & listening (energy_threshold={energy_threshold}, "
+        f"✅ Model {original_model} (using {model}) loaded & listening (energy_threshold={energy_threshold}, "
         f"record_timeout={record_timeout}, phrase_timeout={phrase_timeout})...\n"
     )
     print(message)
-    with Path.open("transcription_output.txt", "w", encoding="utf-8") as file:
+    with open("transcription_output.txt", "w", encoding="utf-8") as file:
         file.write(message)
 
     try:
@@ -125,7 +140,13 @@ def main(
                 audio_np = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
 
                 # Read the transcription.
-                result = audio_model.transcribe(audio_np, fp16=torch.cuda.is_available())
+                # Determine language based on original model name
+                if ".ja" in original_model:
+                    # Force Japanese language for Japanese models
+                    result = audio_model.transcribe(audio_np, fp16=torch.cuda.is_available(), language="ja")
+                else:
+                    # Let Whisper auto-detect or use default (English for .en models, auto for .multi)
+                    result = audio_model.transcribe(audio_np, fp16=torch.cuda.is_available())
                 text = result["text"].strip()
 
                 # If we detected a pause between recordings, add a new item to our transcription.
@@ -146,7 +167,7 @@ def main(
                 # Flush stdout.
                 print("", end="", flush=True)
 
-                with Path.open("transcription_output.txt", "w", encoding="utf-8") as file:
+                with open("transcription_output.txt", "w", encoding="utf-8") as file:
                     for line in transcription:
                         file.write(line + "\n\n")
             else:
