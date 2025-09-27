@@ -51,13 +51,24 @@ def clear_transcription_file():
     # Opening in 'w' mode truncates the file
     with Path("transcription_output.txt").open("w") as file:
         pass
-    with Path("summary.txt").open("w") as file:  # noqa: F841
+    with Path("summary.txt").open("w") as file:
+        pass
+    # Ensure translated files are also reset
+    with Path("translated_output.txt").open("w") as file:
+        pass
+    with Path("translated_summary.txt").open("w") as file:  # noqa: F841
         pass
 
 
 def load_transcription():
     with Path("transcription_output.txt").open("a+") as file:
         file.seek(0)  # Move cursor to the start of the file
+        return file.read()
+
+
+def load_translated_transcription():
+    with Path("translated_output.txt").open("a+") as file:
+        file.seek(0)
         return file.read()
 
 
@@ -72,6 +83,12 @@ def summarize():
     subprocess.Popen(cmd)
     with Path("summary.txt").open("a+") as file:
         file.seek(0)  # Move cursor to the start of the file
+        return file.read()
+
+
+def load_translated_summary():
+    with Path("translated_summary.txt").open("a+") as file:
+        file.seek(0)
         return file.read()
 
 
@@ -154,21 +171,29 @@ def app():
 
     st.markdown("### Transcription")
     transcription_display = st.empty()
+    st.markdown("### Translated Transcription")
+    translated_transcription_display = st.empty()
 
     st.markdown("---")
 
     st.markdown("### Summary")
     summary_display = st.empty()
+    st.markdown("### Translated Summary")
+    translated_summary_display = st.empty()
 
     counter = 0
     while True:
         transcription_content = load_transcription()
         transcription_display.markdown(transcription_content)
+        translated_transcription_content = load_translated_transcription()
+        translated_transcription_display.markdown(translated_transcription_content)
         last_update.text(f"Last updated: {time.ctime()}")
 
         if counter % 10 == 0:
             summary = summarize()
             summary_display.markdown(summary)
+            translated_summary = load_translated_summary()
+            translated_summary_display.markdown(translated_summary)
 
         counter += 1
         time.sleep(1)  # Refresh every second

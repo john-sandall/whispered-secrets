@@ -176,45 +176,8 @@ def main(input_filepath: str, output_filepath: str):
                 "details": "The LLM response could not be parsed as valid JSON.",
             }
 
-    # Translate to Japanese if available
-    translator = translator_manager.get_translator()
-    japanese_summary = {}
-
-    if translator and translator is not False:
-        try:
-            typer.echo("Translating summary to Japanese...")
-
-            # Translate each field using DeepL
-            japanese_summary["title"] = translator.translate_text(
-                summary["title"], target_lang="JA"
-            ).text
-
-            japanese_summary["tldr"] = translator.translate_text(
-                summary["tldr"], target_lang="JA"
-            ).text
-
-            # Translate items list
-            japanese_summary["items"] = []
-            for item in summary["items"]:
-                if item:  # Skip empty items
-                    translated = translator.translate_text(item, target_lang="JA").text
-                    japanese_summary["items"].append(translated)
-
-            japanese_summary["details"] = translator.translate_text(
-                summary["details"], target_lang="JA"
-            ).text
-
-            typer.echo("Translation complete!")
-        except Exception as e:
-            typer.echo(f"Translation error: {e}")
-            japanese_summary = None
-    else:
-        japanese_summary = None
-
-    # Create markdown format with sections one above the other
-    markdown = f"""# Summary / 要約
-
-## English Version
+    # Build English-only markdown summary
+    english_markdown = f"""# Summary
 
 ### {summary["title"]}
 
@@ -222,37 +185,59 @@ _**tldr:** {summary["tldr"]}_
 
 """
     for bullet in summary["items"]:
-        if bullet:  # Skip empty items
-            markdown += f"- {bullet}\n"
+        if bullet:
+            english_markdown += f"- {bullet}\n"
 
-    markdown += f"""
+    english_markdown += f"""
 {summary["details"]}
-
----
-
-## Japanese Version / 日本語版
-
 """
 
-    if japanese_summary:
-        markdown += f"""### {japanese_summary["title"]}
-
-_**tldr:** {japanese_summary["tldr"]}_
-
-"""
-        for bullet in japanese_summary["items"]:
-            if bullet:  # Skip empty items
-                markdown += f"- {bullet}\n"
-
-        markdown += f"""
-{japanese_summary["details"]}
-"""
-    else:
-        markdown += "_Translation not available / 翻訳は利用できません_\n"
-
-    typer.echo(markdown)
+    # Always write English summary to output_filepath
+    typer.echo(english_markdown)
     with Path(output_filepath).open("w") as f:
-        f.write(markdown)
+        f.write(english_markdown)
+
+    # Optionally write translated summary to translated_summary.txt
+    translator = translator_manager.get_translator()
+    translated_summary_path = Path("translated_summary.txt")
+    japanese_markdown = None
+
+    if translator and translator is not False:
+        try:
+            typer.echo("Translating summary to Japanese...")
+            title_ja = translator.translate_text(summary["title"], target_lang="JA").text
+            tldr_ja = translator.translate_text(summary["tldr"], target_lang="JA").text
+            items_ja = [
+                translator.translate_text(item, target_lang="JA").text
+                for item in summary["items"]
+                if item
+            ]
+            details_ja = translator.translate_text(summary["details"], target_lang="JA").text
+
+            japanese_markdown = f"""# 要約(日本語)
+
+### {title_ja}
+
+_**tldr:** {tldr_ja}_
+
+"""
+            for bullet in items_ja:
+                if bullet:
+                    japanese_markdown += f"- {bullet}\n"
+
+            japanese_markdown += f"""
+{details_ja}
+"""
+            typer.echo("Translation complete!")
+        except Exception as e:
+            typer.echo(f"Translation error: {e}")
+            japanese_markdown = ""
+    else:
+        japanese_markdown = ""
+
+    # Always write file, even if empty, so UI can read it safely
+    with translated_summary_path.open("w") as f:
+        f.write(japanese_markdown)
 
 
 if __name__ == "__main__":

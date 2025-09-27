@@ -164,8 +164,10 @@ def main(
         f"phrase_timeout={phrase_timeout})...\n"
     )
     print(message)
-    with Path("transcription_output.txt").open("w", encoding="utf-8") as file:
-        file.write(message)
+    # Ensure output files exist and start empty. We keep raw transcription
+    # separate from translations per app requirements.
+    Path("transcription_output.txt").write_text("", encoding="utf-8")
+    Path("translated_output.txt").write_text("", encoding="utf-8")
 
     try:
         while True:
@@ -258,32 +260,18 @@ def main(
                 # Flush stdout.
                 print("", end="", flush=True)
 
-                # Write both versions to file in a structured format
+                # Write raw transcription only (no translations)
                 with Path("transcription_output.txt").open("w", encoding="utf-8") as file:
-                    if translator:
-                        file.write("=== BILINGUAL TRANSCRIPTION ===\n\n")
-                        if is_japanese_model:
-                            file.write("【日本語 / Original Japanese】\n")
-                        else:
-                            file.write("【English / Original】\n")
-                        file.write("-" * 40 + "\n")
-
                     for line in transcription:
                         if line:
                             file.write(line + "\n\n")
 
-                    # Add translations section if available
-                    if translator and any(translations):
-                        file.write("\n" + "=" * 40 + "\n\n")
-                        if is_japanese_model:
-                            file.write("【English Translation / 英訳】\n")
-                        else:
-                            file.write("【Japanese Translation / 日本語訳】\n")
-                        file.write("-" * 40 + "\n")
-
+                # Write translations to a separate file
+                if translator:
+                    with Path("translated_output.txt").open("w", encoding="utf-8") as tfile:
                         for trans in translations:
                             if trans:
-                                file.write(trans + "\n\n")
+                                tfile.write(trans + "\n\n")
             else:
                 # Infinite loops are bad for processors, must sleep.
                 sleep(0.1)

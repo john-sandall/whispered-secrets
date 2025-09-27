@@ -10,6 +10,8 @@
 !**/data/**/*.gitkeep
 summary.txt
 transcription_output.txt
+translated_output.txt
+translated_summary.txt
 
 # Secrets
 .env
