@@ -11,46 +11,74 @@ Set DEEPL_API_KEY environment variable for Japanese translation.
 
 import json
 import os
+import re
 from pathlib import Path
 
 import typer
 from langchain_ollama import OllamaLLM
 
+try:
+    import deepl
+except ImportError:
+    deepl = None
+
 MAX_PREVIEW_LENGTH = 200
+MIN_ITEMS_COUNT = 3
 
-# Translation client (loaded lazily)
-_translator = None
 
-def get_translator():
-    """Lazy load the DeepL translator."""
-    global _translator
-    if _translator is None:
+class TranslatorManager:
+    """Manages DeepL translator instance."""
+
+    def __init__(self):
+        """Initialize the translator manager."""
+        self._translator = None
+        self._initialized = False
+
+    def get_translator(self):
+        """Lazy load the DeepL translator."""
+        if self._initialized:
+            return self._translator
+
+        self._initialized = True
         api_key = os.getenv("DEEPL_API_KEY")
         if api_key:
+            if deepl is None:
+                typer.echo("Warning: deepl library not installed. Translation disabled.")
+                typer.echo("Install with: pip install deepl")
+                self._translator = False
+                return self._translator
+
             try:
-                import deepl
                 typer.echo("Initializing DeepL translator...")
-                _translator = deepl.Translator(api_key)
+                self._translator = deepl.Translator(api_key)
                 # Test the API key
-                usage = _translator.get_usage()
+                usage = self._translator.get_usage()
                 if usage.character.limit:
                     chars_used = usage.character.count
                     chars_limit = usage.character.limit
-                    typer.echo(f"DeepL API connected! ({chars_used:,}/{chars_limit:,} characters used)")
+                    typer.echo(
+                        f"DeepL API connected! ({chars_used:,}/{chars_limit:,} characters used)"
+                    )
                 else:
                     typer.echo("DeepL API connected!")
-            except ImportError:
-                typer.echo("Warning: deepl library not installed. Translation disabled.")
-                typer.echo("Install with: pip install deepl")
-                _translator = False
             except Exception as e:
                 typer.echo(f"DeepL initialization error: {e}")
                 typer.echo("Please check your DEEPL_API_KEY environment variable")
-                _translator = False
+                self._translator = False
         else:
             typer.echo("Note: Set DEEPL_API_KEY environment variable for Japanese translation")
-            _translator = False
-    return _translator
+            self._translator = False
+        return self._translator
+
+
+# Global instance
+translator_manager = TranslatorManager()
+
+
+def _validate_summary_field(field_name: str) -> None:
+    """Helper to raise missing field error."""
+    msg = f"Missing required field: {field_name}"
+    raise ValueError(msg)
 
 
 def main(input_filepath: str, output_filepath: str):
@@ -116,13 +144,13 @@ def main(input_filepath: str, output_filepath: str):
             required_fields = ["title", "tldr", "items", "details"]
             for field in required_fields:
                 if field not in summary:
-                    raise ValueError(f"Missing required field: {field}")
+                    _validate_summary_field(field)
 
             # Ensure items is a list with at least some content
             if not isinstance(summary["items"], list):
                 summary["items"] = ["No items", "No items", "No items"]
-            elif len(summary["items"]) < 3:
-                while len(summary["items"]) < 3:
+            elif len(summary["items"]) < MIN_ITEMS_COUNT:
+                while len(summary["items"]) < MIN_ITEMS_COUNT:
                     summary["items"].append("")
 
         except (json.JSONDecodeError, ValueError) as e:
@@ -135,11 +163,10 @@ def main(input_filepath: str, output_filepath: str):
             # Look for partial title/tldr in the response
             if '"title"' in json_str:
                 try:
-                    import re
                     title_match = re.search(r'"title"\s*:\s*"([^"]*)"', json_str)
                     if title_match and title_match.group(1).strip():
                         fallback_title = title_match.group(1)
-                except:
+                except Exception:
                     pass
 
             summary = {
@@ -150,7 +177,7 @@ def main(input_filepath: str, output_filepath: str):
             }
 
     # Translate to Japanese if available
-    translator = get_translator()
+    translator = translator_manager.get_translator()
     japanese_summary = {}
 
     if translator and translator is not False:

@@ -19,6 +19,11 @@ import torch
 import typer
 import whisper
 
+try:
+    import deepl
+except ImportError:
+    deepl = None
+
 
 def check_for_stop_signal():
     return os.path.exists("stop_signal.txt")
@@ -28,23 +33,28 @@ def get_translator():
     """Initialize DeepL translator if API key is available."""
     api_key = os.getenv("DEEPL_API_KEY")
     if api_key:
+        if deepl is None:
+            print("Warning: deepl library not installed. Translation disabled.")
+            print("Install with: pip install deepl")
+            return None
+
         try:
-            import deepl
             translator = deepl.Translator(api_key)
             # Test the connection
             usage = translator.get_usage()
             if usage.character.limit:
-                print(f"DeepL connected! ({usage.character.count:,}/{usage.character.limit:,} chars used)")
+                char_info = (
+                    f"DeepL connected! ({usage.character.count:,}/"
+                    f"{usage.character.limit:,} chars used)"
+                )
+                print(char_info)
             else:
                 print("DeepL connected!")
-            return translator
-        except ImportError:
-            print("Warning: deepl library not installed. Translation disabled.")
-            print("Install with: pip install deepl")
-            return None
         except Exception as e:
             print(f"DeepL initialization error: {e}")
             return None
+        else:
+            return translator
     else:
         print("Note: Set DEEPL_API_KEY environment variable for real-time translation")
         return None
@@ -53,7 +63,10 @@ def get_translator():
 def main(
     model: str = typer.Option(
         "medium",
-        help="Model to use. Choose from: tiny, base, small, medium, or with language suffix like small.en or small.ja",
+        help=(
+            "Model to use. Choose from: tiny, base, small, medium, "
+            "or with language suffix like small.en or small.ja"
+        ),
     ),
     energy_threshold: int = typer.Option(300, help="Energy level for mic to detect."),
     record_timeout: float = typer.Option(3.0, help="How real time the recording is in seconds."),
@@ -80,14 +93,16 @@ def main(
     # Store original model name for language detection and display
     original_model = model
 
-    # Check if model already has a language suffix (.en, .ja, .multi, etc.) or is a multilingual model
+    # Check if model already has a language suffix (.en, .ja, .multi, etc.)
+    # or is a multilingual model
     if "." not in model:
         # If no suffix, default to English-only model for backward compatibility
         # unless it's "large" which doesn't have .en variant
         if model != "large":
             model = model + ".en"
     elif ".multi" in model:
-        # For multilingual models, remove the .multi suffix as Whisper uses base names for multilingual
+        # For multilingual models, remove the .multi suffix as Whisper uses
+        # base names for multilingual
         model = model.replace(".multi", "")
     elif ".ja" in model:
         # For Japanese, we use the multilingual model but will force Japanese language
@@ -101,11 +116,9 @@ def main(
     # Determine source and target languages based on model
     is_japanese_model = ".ja" in original_model
     if is_japanese_model:
-        source_lang = "JA"
         target_lang = "EN-US"  # English US
         print("Japanese → English translation enabled" if translator else "")
     else:
-        source_lang = "EN"
         target_lang = "JA"
         print("English → Japanese translation enabled" if translator else "")
 
@@ -146,11 +159,12 @@ def main(
     )
 
     message = (
-        f"✅ Model {original_model} (using {model}) loaded & listening (energy_threshold={energy_threshold}, "
-        f"record_timeout={record_timeout}, phrase_timeout={phrase_timeout})...\n"
+        f"✅ Model {original_model} (using {model}) loaded & listening "
+        f"(energy_threshold={energy_threshold}, record_timeout={record_timeout}, "
+        f"phrase_timeout={phrase_timeout})...\n"
     )
     print(message)
-    with open("transcription_output.txt", "w", encoding="utf-8") as file:
+    with Path("transcription_output.txt").open("w", encoding="utf-8") as file:
         file.write(message)
 
     try:
@@ -186,9 +200,12 @@ def main(
                 # Determine language based on original model name
                 if ".ja" in original_model:
                     # Force Japanese language for Japanese models
-                    result = audio_model.transcribe(audio_np, fp16=torch.cuda.is_available(), language="ja")
+                    result = audio_model.transcribe(
+                        audio_np, fp16=torch.cuda.is_available(), language="ja"
+                    )
                 else:
-                    # Let Whisper auto-detect or use default (English for .en models, auto for .multi)
+                    # Let Whisper auto-detect or use default
+                    # (English for .en models, auto for .multi)
                     result = audio_model.transcribe(audio_np, fp16=torch.cuda.is_available())
                 text = result["text"].strip()
 
@@ -216,7 +233,9 @@ def main(
                     # Translate the ENTIRE combined text, not just the increment
                     if translator and cleaned_text:
                         try:
-                            translation = translator.translate_text(cleaned_text, target_lang=target_lang)
+                            translation = translator.translate_text(
+                                cleaned_text, target_lang=target_lang
+                            )
                             translations[-1] = translation.text
                         except Exception as e:
                             print(f"Translation error: {e}")
@@ -240,7 +259,7 @@ def main(
                 print("", end="", flush=True)
 
                 # Write both versions to file in a structured format
-                with open("transcription_output.txt", "w", encoding="utf-8") as file:
+                with Path("transcription_output.txt").open("w", encoding="utf-8") as file:
                     if translator:
                         file.write("=== BILINGUAL TRANSCRIPTION ===\n\n")
                         if is_japanese_model:
