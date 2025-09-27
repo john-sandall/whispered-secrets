@@ -13,7 +13,6 @@ Visit https://YOUR-CUSTOM-URL.sagemaker.aws/proxy/{YOUR-PROXY-HERE}/
 e.g.  https://obt-workshop.notebook.eu-west-2.sagemaker.aws/proxy/8501/
 """
 
-
 import pandas as pd
 import streamlit as st
 

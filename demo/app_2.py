@@ -4,6 +4,7 @@ Whispered Secrets.
 Usage:
     streamlit run demo/app_2.py
 """
+
 import time
 
 import speech_recognition as sr

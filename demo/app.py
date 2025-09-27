@@ -22,7 +22,7 @@ div[data-stale="true"] {
 
 
 def send_stop_signal():
-    with Path.open("stop_signal.txt", "w") as f:
+    with Path("stop_signal.txt").open("w") as f:
         print("Sending stop signal")
         f.write("stop")
 
@@ -49,14 +49,14 @@ def start_transcription(model, energy_threshold, record_timeout, phrase_timeout,
 def clear_transcription_file():
     """Clear the contents of the transcription file"""
     # Opening in 'w' mode truncates the file
-    with Path.open("transcription_output.txt", "w") as file:
+    with Path("transcription_output.txt").open("w") as file:
         pass
-    with Path.open("summary.txt", "w") as file:  # noqa: F841
+    with Path("summary.txt").open("w") as file:  # noqa: F841
         pass
 
 
 def load_transcription():
-    with Path.open("transcription_output.txt", "a+") as file:
+    with Path("transcription_output.txt").open("a+") as file:
         file.seek(0)  # Move cursor to the start of the file
         return file.read()
 
@@ -70,7 +70,7 @@ def summarize():
         "summary.txt",
     ]
     subprocess.Popen(cmd)
-    with Path.open("summary.txt", "a+") as file:
+    with Path("summary.txt").open("a+") as file:
         file.seek(0)  # Move cursor to the start of the file
         return file.read()
 

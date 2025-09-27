@@ -5,13 +5,13 @@ default_language_version:
   python: python3.12
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
         name: Check for a blank line at the end of scripts (auto-fixes)
       - id: trailing-whitespace
       - id: check-builtin-literals
-      - id: check-byte-order-marker
+      - id: fix-byte-order-marker
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
@@ -21,8 +21,6 @@ repos:
       - id: debug-statements
       - id: detect-private-key
       - id: mixed-line-ending
-      - id: fix-encoding-pragma
-        args: ["--remove"]
       - id: check-yaml
       - id: check-added-large-files
         name: Check for files larger than 5 MB
@@ -33,7 +31,7 @@ repos:
         args: ["--django"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.14
+    rev: v0.13.2
     hooks:
       # Run the formatter.
       - id: ruff-format
@@ -45,7 +43,7 @@ repos:
         args: [--fix]
 
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
       - id: detect-secrets
         name: detect-secrets - Detect secrets in staged code
@@ -107,7 +105,7 @@ repos:
       - id: poetry-lock
         name: poetry-lock
         # entry: bash -c 'poetry lock && python add_markers.py'
-        entry: bash -c 'poetry lock --no-update'
+        entry: bash -c 'poetry lock'
         language: system
         always_run: true
         pass_filenames: false
