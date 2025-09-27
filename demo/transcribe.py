@@ -3,6 +3,8 @@ Whispered Secrets.
 
 Usage:
     python -m demo.transcribe
+
+Set DEEPL_API_KEY environment variable for translation.
 """
 
 import os
@@ -20,6 +22,32 @@ import whisper
 
 def check_for_stop_signal():
     return os.path.exists("stop_signal.txt")
+
+
+def get_translator():
+    """Initialize DeepL translator if API key is available."""
+    api_key = os.getenv("DEEPL_API_KEY")
+    if api_key:
+        try:
+            import deepl
+            translator = deepl.Translator(api_key)
+            # Test the connection
+            usage = translator.get_usage()
+            if usage.character.limit:
+                print(f"DeepL connected! ({usage.character.count:,}/{usage.character.limit:,} chars used)")
+            else:
+                print("DeepL connected!")
+            return translator
+        except ImportError:
+            print("Warning: deepl library not installed. Translation disabled.")
+            print("Install with: pip install deepl")
+            return None
+        except Exception as e:
+            print(f"DeepL initialization error: {e}")
+            return None
+    else:
+        print("Note: Set DEEPL_API_KEY environment variable for real-time translation")
+        return None
 
 
 def main(
@@ -67,6 +95,20 @@ def main(
 
     audio_model = whisper.load_model(model)
 
+    # Initialize DeepL translator if available
+    translator = get_translator()
+
+    # Determine source and target languages based on model
+    is_japanese_model = ".ja" in original_model
+    if is_japanese_model:
+        source_lang = "JA"
+        target_lang = "EN-US"  # English US
+        print("Japanese → English translation enabled" if translator else "")
+    else:
+        source_lang = "EN"
+        target_lang = "JA"
+        print("English → Japanese translation enabled" if translator else "")
+
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect
     # when speech ends.
     recorder = sr.Recognizer()
@@ -79,6 +121,7 @@ def main(
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue = Queue()
     transcription = [""]
+    translations = [""]  # Store translations separately
 
     # The last time a recording was retrieved from the queue.
     phrase_time = None
@@ -153,6 +196,16 @@ def main(
                 # Otherwise edit the existing one.
                 if phrase_complete:
                     transcription.append(text)
+                    # Translate the new phrase
+                    if translator and text:
+                        try:
+                            translation = translator.translate_text(text, target_lang=target_lang)
+                            translations.append(translation.text)
+                        except Exception as e:
+                            print(f"Translation error: {e}")
+                            translations.append("")
+                    else:
+                        translations.append("")
                 else:
                     cleaned = transcription[-1].strip()
                     for suffix in ["...", ".", "?"]:
@@ -160,16 +213,58 @@ def main(
                     cleaned_text = (cleaned + " " + text).strip()
                     transcription[-1] = cleaned_text
 
+                    # Translate the ENTIRE combined text, not just the increment
+                    if translator and cleaned_text:
+                        try:
+                            translation = translator.translate_text(cleaned_text, target_lang=target_lang)
+                            translations[-1] = translation.text
+                        except Exception as e:
+                            print(f"Translation error: {e}")
+                            if len(translations) > 0:
+                                translations[-1] = ""
+                    elif len(translations) > 0:
+                        translations[-1] = ""
+
                 # Clear the console to reprint the updated transcription.
                 os.system("cls" if os.name == "nt" else "clear")
-                for line in transcription:
-                    print(line, end="\n\n")
+
+                # Display both original and translated text
+                for i, line in enumerate(transcription):
+                    if line:  # Skip empty lines
+                        print(f"[Original] {line}")
+                        if translator and i < len(translations) and translations[i]:
+                            print(f"[{target_lang}] {translations[i]}")
+                        print()  # Add spacing between segments
+
                 # Flush stdout.
                 print("", end="", flush=True)
 
+                # Write both versions to file in a structured format
                 with open("transcription_output.txt", "w", encoding="utf-8") as file:
+                    if translator:
+                        file.write("=== BILINGUAL TRANSCRIPTION ===\n\n")
+                        if is_japanese_model:
+                            file.write("【日本語 / Original Japanese】\n")
+                        else:
+                            file.write("【English / Original】\n")
+                        file.write("-" * 40 + "\n")
+
                     for line in transcription:
-                        file.write(line + "\n\n")
+                        if line:
+                            file.write(line + "\n\n")
+
+                    # Add translations section if available
+                    if translator and any(translations):
+                        file.write("\n" + "=" * 40 + "\n\n")
+                        if is_japanese_model:
+                            file.write("【English Translation / 英訳】\n")
+                        else:
+                            file.write("【Japanese Translation / 日本語訳】\n")
+                        file.write("-" * 40 + "\n")
+
+                        for trans in translations:
+                            if trans:
+                                file.write(trans + "\n\n")
             else:
                 # Infinite loops are bad for processors, must sleep.
                 sleep(0.1)

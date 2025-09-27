@@ -184,7 +184,7 @@ def main(input_filepath: str, output_filepath: str):
     else:
         japanese_summary = None
 
-    # Create side-by-side markdown format
+    # Create markdown format with sections one above the other
     markdown = f"""# Summary / 要約
 
 ## English Version
